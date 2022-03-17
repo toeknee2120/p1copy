@@ -76,10 +76,12 @@ void addNewProcessToSchedule( schedule *ps, char *processName, priority p ) {
 }
 
 void printSchedule(schedule *ps){
+    
+    LLNode* currentNode;// = (LLNode*)malloc(sizeof(LLNode));
+    
     if (isScheduleUnfinished(ps)){
         if ( (!isEmpty(ps->foreQueue))){
             
-            LLNode* currentNode = (LLNode*)malloc(sizeof(LLNode));
             currentNode = ps->foreQueue->qFront;
             printf("---Stuff in the FOREGROUND ---\n");
             printf("%s\n", currentNode->qt->processName);
@@ -91,7 +93,7 @@ void printSchedule(schedule *ps){
         }
         
         if ( (!isEmpty(ps->backQueue))){
-            LLNode* currentNode = (LLNode*)malloc(sizeof(LLNode));
+            // LLNode* currentNode = (LLNode*)malloc(sizeof(LLNode));
             currentNode = ps->backQueue->qFront;
             printf("---Stuff in the BACKGROUND ---\n");
             printf("%s\n", currentNode->qt->processName);
