@@ -129,7 +129,6 @@ char* runNextProcessInSchedule( schedule *ps ) {
 	char **ppSystemCall = &ret;
 	queueType removeProcess;
 	process* next;
-	printf("current time = %d",ps->time);
 	
 		if(!(isEmpty(ps->foreQueue))){
 			//doing foreground stuff

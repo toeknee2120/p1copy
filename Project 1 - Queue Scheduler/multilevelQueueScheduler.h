@@ -20,7 +20,6 @@ typedef struct schedule
     Queue *foreQueue;
     Queue *backQueue;
     //TODO: Put the data for your schedule program here!
-	extern int time;
 
 }  schedule;
 
