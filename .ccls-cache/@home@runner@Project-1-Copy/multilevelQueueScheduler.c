@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include "multilevelQueueScheduler.h"
 
 static const int STEPS_TO_PROMOTION = 50;
@@ -7,16 +8,24 @@ static const int FOREGROUND_QUEUE_STEPS = 5;
 int min( int x, int y );
 
 /**** CUSTOM FUNCTIONS ***/
+void cyan();
 void red();
 void yellow();
 void reset();
+
 void printQueue(Queue* q, char* queuePriority);
 void printSchedule(schedule *ps);    
 
+void black(){printf("\033[30m");}
+void blue(){printf("\033[34m");}
 void cyan(){ printf("\033[0;36m");}
+void green(){printf("\033[32m");}
+void magenta(){printf("\033[35m");}
 void red(){printf("\033[1;31m");}
-void yellow(){printf("\033[1;33m");}
+void white(){printf("\033[37m");}
+void yellow(){printf("\033[33m");}
 void reset(){printf("\033[0m");}
+
 
 /* printSchedule
  * input: schedule
@@ -25,9 +34,11 @@ void reset(){printf("\033[0m");}
  * Prints the queues inside the schedule
  */
 void printSchedule(schedule *ps){ 
-    
+    yellow();
     printQueue(ps->foreQueue, "FOREGROUND");
     printQueue(ps->backQueue, "BACKGROUND");
+    printf("--------------------------------------------------\n\n");
+    reset();
 }
 
 /* printQueue
@@ -38,22 +49,20 @@ void printSchedule(schedule *ps){
  */
 void printQueue(Queue* q, char* queuePriority){
     LLNode* currentNode;
-    
-    yellow();
-    if ( (!isEmpty(q))){
+        
+    // if ( (!isEmpty(q))){
         currentNode = q->qFront;
         printf("--- %s---\n", queuePriority);
         while(currentNode != NULL){
             // Added check to only print the TIQ for background processes            
-            if (queuePriority == "BACKGROUND" )
+            if ( strcmp(queuePriority,"BACKGROUND") == 0)
                 printf("%-20s  \t TIQ: %d\n", currentNode->qt->processName, currentNode->qt->timeInQueue);
             else
                 printf("%-20s\n", currentNode->qt->processName);
             
             currentNode = currentNode->pNext;
         }     
-    }
-    reset();
+    // }
 }
 
 /* updateProcessTimes
@@ -100,48 +109,48 @@ int getMaxTIQ(Queue* q){
 }
 
 
+/* findProcessToPromote
+ * input: schedule
+ * output: void
+ *
+ * Looks through all the BACKGROUND processes to find any that require PROMOTING
+ */
 void findProcessToPromote(schedule* ps){
-	//int maxTIQ = 0;
-	LLNode* currentNode;
+
+    LLNode* currentNode;
+    LLNode* temp;
 	process* removeProcess;
 
-    /*
-        1->2->N
-    */
+    //get the first node in the backQueue
+    currentNode = ps->backQueue->qFront;
     
-	if(!isEmpty(ps->backQueue)){
-		currentNode = ps->backQueue->qFront;
-		if(currentNode->qt->timeInQueue >= STEPS_TO_PROMOTION){
-			promoteProcess(currentNode->qt->processName,currentNode->qt->data);
+    cyan();
+
+    //while the node is not NULL, then check its timeInQueue and PROMOTE if necessary
+    //otherwise, move onto next node
+    while (currentNode != NULL){
+        
+        printf("checking %s\n", currentNode->qt->processName); 
+        
+        if(currentNode->qt->timeInQueue >= STEPS_TO_PROMOTION){
+            printf("\tWe need to PROMOTE  %s\n", currentNode->qt->processName); 
+            temp = currentNode->pNext;
+            promoteProcess(currentNode->qt->processName,currentNode->qt->data);
             removeProcess = dequeue(ps->backQueue);
             enqueue(ps->foreQueue,removeProcess);
-			//we need to promote
-		}else{
-			removeProcess = dequeue(ps->backQueue);
-            enqueue(ps->backQueue,removeProcess);
-            //move process to back of backQueue
-        }
-
-		while(currentNode->pNext != NULL){
-			currentNode = currentNode->pNext;
-    		if(currentNode->qt->timeInQueue >= STEPS_TO_PROMOTION){
-    			promoteProcess(currentNode->qt->processName,currentNode->qt->data);
-	            removeProcess = dequeue(ps->backQueue);
-	            enqueue(ps->foreQueue,removeProcess);
-				//we need to promote
-    		}else{
-                removeProcess = dequeue(ps->backQueue);
-	            enqueue(ps->backQueue,removeProcess);
-	            //move process to back of backQueue
+            currentNode = temp;
+            }else{
+                currentNode = currentNode->pNext;
             }
-		}
-	}
-	
+    }
+    
+    reset();
+    
 }
-
-
-
 //=============================================================================================
+
+
+
 
 /* createSchedule
  * input: none
@@ -166,7 +175,6 @@ schedule* createSchedule( ) {
 }
 
 
-
 /* isScheduleUnfinished
  * input: a schedule
  * output: bool (true or false)
@@ -181,6 +189,7 @@ bool isScheduleUnfinished( schedule *ps ) {
 	else
 		return true;
 }
+
 
 /* addNewProcessToSchedule
  * input: a schedule, a string, a priority
@@ -214,10 +223,6 @@ void addNewProcessToSchedule( schedule *ps, char *processName, priority p ) {
 }
 
 
-
-
-
-
 /* runNextProcessInSchedule
  * input: a schedule
  * output: a string
@@ -239,15 +244,58 @@ char* runNextProcessInSchedule( schedule *ps ) {
 	char **ppSystemCall = &ret;
 	queueType removeProcess;
 	process* next;
-	
+    int maxTIQ;
+
+    printSchedule(ps);
+
+
+    if(!(isEmpty(ps->backQueue)) && (isEmpty(ps->foreQueue))){
+
+        bool isFinished = false;
+        next = getNext(ps->backQueue);
+        loadProcessData(next->data);
+
+/**********************************************************/
+        maxSteps = next->data->heap[1];
+		// int maxTIQ;
+		maxTIQ = getMaxTIQ(ps->backQueue);
+		if(maxTIQ + maxSteps >= STEPS_TO_PROMOTION){
+			maxSteps = STEPS_TO_PROMOTION - maxTIQ;
+		}
+/*************************************************************/
+        
+        // if(maxSteps + next->timeInQueue >= STEPS_TO_PROMOTION)
+        //     maxSteps = STEPS_TO_PROMOTION-next->timeInQueue; // if so, reduce StepsToComplete 
+            
+        isFinished = runProcess(next->processName,ppSystemCall,pNumSteps);
+		updateProcessTimes(ps,*pNumSteps);
+		ps->currentTime += *pNumSteps;
+        //howLongInQueue = getTimeDifference(next->timeScheduled);
+        
+        if(!(isFinished) && (next->timeInQueue>=STEPS_TO_PROMOTION)){
+            promoteProcess(next->processName,next->data);
+            removeProcess = dequeue(ps->backQueue);
+            enqueue(ps->foreQueue,removeProcess);
+        }
+        if(isFinished){
+            removeProcess = dequeue(ps->backQueue);
+            freeProcessData( );
+            free(removeProcess);
+        }
+        
+    }//end of if(!(isEmpty(ps->backQueue)) && (isEmpty(ps->foreQueue)))
+
+
+    
+
+    
     if(!(isEmpty(ps->foreQueue))){
         //doing foreground stuff
         /*
             If one of the bg processes->timeInQueue + maxSteps >= 50:
-                maxSteps = 50 - process->timeInQueue
+                maxSteps = 50 - bg process->timeInQueue
         */
 		maxSteps = FOREGROUND_QUEUE_STEPS;
-		int maxTIQ;
 		maxTIQ = getMaxTIQ(ps->backQueue);
 		if(maxTIQ + maxSteps >= STEPS_TO_PROMOTION){
 			maxSteps = STEPS_TO_PROMOTION - maxTIQ;
@@ -255,6 +303,7 @@ char* runNextProcessInSchedule( schedule *ps ) {
 		
         next = getNext(ps->foreQueue);
         loadProcessData(next->data);
+        
         bool isFinished = runProcess(next->processName,ppSystemCall,pNumSteps);
 		updateProcessTimes(ps,*pNumSteps);
 		ps->currentTime += *pNumSteps;
@@ -283,47 +332,11 @@ char* runNextProcessInSchedule( schedule *ps ) {
             enqueue(ps->foreQueue,removeProcess);
         }
 
-        printSchedule(ps);
     }
 
     
-    if(!(isEmpty(ps->backQueue)) && (isEmpty(ps->foreQueue))){
 
-        bool isFinished = false;
-        next = getNext(ps->backQueue);
-        loadProcessData(next->data);
-
-/**********************************************************
-        maxSteps = next->data->heap[1];
-		int maxTIQ;
-		maxTIQ = checkTIQ(ps);
-		if(maxTIQ + maxSteps >= STEPS_TO_PROMOTION){
-			maxSteps = STEPS_TO_PROMOTION - maxTIQ;
-		}
-*************************************************************/
-        
-        // if(maxSteps + next->timeInQueue >= STEPS_TO_PROMOTION)
-        //     maxSteps = STEPS_TO_PROMOTION-next->timeInQueue; // if so, reduce StepsToComplete 
-            
-        isFinished = runProcess(next->processName,ppSystemCall,pNumSteps);
-		updateProcessTimes(ps,*pNumSteps);
-		ps->currentTime += *pNumSteps;
-        //howLongInQueue = getTimeDifference(next->timeScheduled);
-        
-        if(!(isFinished) && (next->timeInQueue>=STEPS_TO_PROMOTION)){
-            promoteProcess(next->processName,next->data);
-            removeProcess = dequeue(ps->backQueue);
-            enqueue(ps->foreQueue,removeProcess);
-        }
-        if(isFinished){
-            removeProcess = dequeue(ps->backQueue);
-            freeProcessData( );
-            free(removeProcess);
-        }
-        
-        printSchedule(ps);
-    }//end of if(!(isEmpty(ps->backQueue)) && (isEmpty(ps->foreQueue)))
-		
+    
     return ret; /* TODO: be sure to store the value returned by runProcess in ret */
 }
 
