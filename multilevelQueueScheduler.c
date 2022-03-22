@@ -65,6 +65,7 @@ void printQueue(Queue* q, char* queuePriority){
     // }
 }
 
+
 /* updateProcessTimes
  * input: schedule, stepsCompleted
  * output: void
@@ -83,6 +84,7 @@ void updateProcessTimes(schedule *ps, int stepsCompleted){
 		}
 	}
 }
+
 
 /* getMaxTIQ
  * input: queue
@@ -263,14 +265,10 @@ char* runNextProcessInSchedule( schedule *ps ) {
 			maxSteps = STEPS_TO_PROMOTION - maxTIQ;
 		}
 /*************************************************************/
-        
-        // if(maxSteps + next->timeInQueue >= STEPS_TO_PROMOTION)
-        //     maxSteps = STEPS_TO_PROMOTION-next->timeInQueue; // if so, reduce StepsToComplete 
-            
+                    
         isFinished = runProcess(next->processName,ppSystemCall,pNumSteps);
 		updateProcessTimes(ps,*pNumSteps);
 		ps->currentTime += *pNumSteps;
-        //howLongInQueue = getTimeDifference(next->timeScheduled);
         
         if(!(isFinished) && (next->timeInQueue>=STEPS_TO_PROMOTION)){
             promoteProcess(next->processName,next->data);
