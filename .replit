@@ -1,7 +1,7 @@
 compile = ["make", "-s"]
-run = "./main"
-entrypoint = "main.c"
-hidden = ["main", "**/*.o", ".ccls-cache", "Makefile"]
+run = "./driver"
+entrypoint = "driver.c"
+hidden = ["driver", "**/*.o", ".ccls-cache", "Makefile"]
 
 [languages.c]
 pattern = "**/*.{c,h}"
@@ -51,7 +51,7 @@ externalConsole = false
 logging = {}
 miDebuggerPath = "gdb"
 name = "g++ - Build and debug active file"
-program = "./main"
+program = "./driver"
 request = "launch"
 setupCommands = [
 	{ description = "Enable pretty-printing for gdb", ignoreFailures = true, text = "-enable-pretty-printing" }

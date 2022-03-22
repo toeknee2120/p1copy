@@ -1,4 +1,0 @@
-*.o
-*.blob
-.ccls-cache/**
-*driver
