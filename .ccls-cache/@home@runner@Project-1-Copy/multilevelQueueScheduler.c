@@ -1,42 +1,41 @@
 #include <stdlib.h>
-
 #include "multilevelQueueScheduler.h"
-
-int min( int x, int y );
 
 static const int STEPS_TO_PROMOTION = 50;
 static const int FOREGROUND_QUEUE_STEPS = 5;
 
+int min( int x, int y );
+
+/**** CUSTOM FUNCTIONS ***/
 void red();
 void yellow();
 void reset();
+void PrintQueue(Queue* q, char* queuePriority);
+    
 
 void cyan(){ printf("\033[0;36m");}
 void red(){printf("\033[1;31m");}
 void yellow(){printf("\033[1;33m");}
 void reset(){printf("\033[0m");}
 
+void printSchedule(schedule *ps){ 
+    PrintQueue(ps->foreQueue, "FOREGROUND");
+    PrintQueue(ps->backQueue, "BACKGROUND");
+}
 
-/* createSchedule
- * input: none
- * output: a schedule
- *
- * Creates and return a schedule struct.
- */
-schedule* createSchedule( ) {  
-	schedule* sched = (schedule*)malloc(sizeof(schedule));
+void PrintQueue(Queue* q, char* queuePriority){
+    LLNode* currentNode;
     
-	if( sched==NULL ){
-        fprintf(stderr, "Error: Unable to allocate data");
-        exit(-1);
+    yellow();
+    if ( (!isEmpty(q))){
+        currentNode = q->qFront;
+        printf("--- %s---\n", queuePriority);
+        while(currentNode != NULL){
+            printf("%s  \t TIQ: %d\n", currentNode->qt->processName, currentNode->qt->timeInQueue);            
+            currentNode = currentNode->pNext;
+        }     
     }
-	else{
-		sched->foreQueue = createQueue();
-		sched->backQueue = createQueue();
-		sched->currentTime = 0;
-	}
-
-    return sched;
+    reset();
 }
 
 int checkTIQ(schedule* ps){
@@ -99,6 +98,31 @@ void findProcessToPromote(schedule* ps){
 	
 }
 
+//=============================================================================================
+
+/* createSchedule
+ * input: none
+ * output: a schedule
+ *
+ * Creates and return a schedule struct.
+ */
+schedule* createSchedule( ) {  
+	schedule* sched = (schedule*)malloc(sizeof(schedule));
+    
+	if( sched==NULL ){
+        fprintf(stderr, "Error: Unable to allocate data");
+        exit(-1);
+    }
+	else{
+		sched->foreQueue = createQueue();
+		sched->backQueue = createQueue();
+		sched->currentTime = 0;
+	}
+
+    return sched;
+}
+
+
 
 /* isScheduleUnfinished
  * input: a schedule
@@ -146,46 +170,6 @@ void addNewProcessToSchedule( schedule *ps, char *processName, priority p ) {
     //free( processName ); /* TODO: This is to prevent a memory leak but you should remove it once you create a process to put processName into */
 }
 
-void printSchedule(schedule *ps){
-    
-    LLNode* currentNode;// = (LLNode*)malloc(sizeof(LLNode));
-
-    yellow();
-    
-    // if ( (!isEmpty(ps->foreQueue))){
-        
-    //     currentNode = ps->foreQueue->qFront;
-        
-    //     printf("---Stuff in the FOREGROUND ---\n");
-    //     printf("%s  \t TIQ: %d\n", currentNode->qt->processName, currentNode->qt->timeInQueue);
-        
-    //     while(!(currentNode->pNext == NULL)){
-    //         currentNode = currentNode->pNext;
-    //         printf("%s  \t TIQ: %d\n", currentNode->qt->processName, currentNode->qt->timeInQueue);            }
-    // }
-    if ( (!isEmpty(ps->foreQueue))){
-        
-        currentNode = ps->foreQueue->qFront;
-        
-        printf("---Stuff in the FOREGROUND ---\n");
-        while(currentNode != NULL){
-            printf("%s  \t TIQ: %d\n", currentNode->qt->processName, currentNode->qt->timeInQueue);            
-            currentNode = currentNode->pNext;
-        }
-    }
-    
-    if ( (!isEmpty(ps->backQueue))){
-        currentNode = ps->backQueue->qFront;
-        printf("---Stuff in the BACKGROUND ---\n");
-        while(currentNode != NULL){
-            printf("%s  \t TIQ: %d\n", currentNode->qt->processName, currentNode->qt->timeInQueue);            
-            currentNode = currentNode->pNext;
-        }     
-    }
-
-    printf("-------------------------\n");
-    reset();
-}
 
 
 
