@@ -8,16 +8,25 @@ static const int FOREGROUND_QUEUE_STEPS = 5;
 int min( int x, int y );
 
 /**** CUSTOM FUNCTIONS ***/
+void cyan();
 void red();
 void yellow();
 void reset();
+
 void printQueue(Queue* q, char* queuePriority);
 void printSchedule(schedule *ps);    
 
+void blue(){printf("\033[34m");}
 void cyan(){ printf("\033[0;36m");}
 void red(){printf("\033[1;31m");}
-void yellow(){printf("\033[1;33m");}
+void yellow(){printf("\033[33m");}
 void reset(){printf("\033[0m");}
+
+void black(){printf("\033[30m");}
+void green(){printf("\033[32m");}
+void magenta(){printf("\033[35m");}
+void white(){printf("\033[37m");}
+
 
 /* printSchedule
  * input: schedule
@@ -26,7 +35,6 @@ void reset(){printf("\033[0m");}
  * Prints the queues inside the schedule
  */
 void printSchedule(schedule *ps){ 
-    
     printQueue(ps->foreQueue, "FOREGROUND");
     printQueue(ps->backQueue, "BACKGROUND");
 }
@@ -240,15 +248,15 @@ char* runNextProcessInSchedule( schedule *ps ) {
 	char **ppSystemCall = &ret;
 	queueType removeProcess;
 	process* next;
+    int maxTIQ;
 	
     if(!(isEmpty(ps->foreQueue))){
         //doing foreground stuff
         /*
             If one of the bg processes->timeInQueue + maxSteps >= 50:
-                maxSteps = 50 - process->timeInQueue
+                maxSteps = 50 - bg process->timeInQueue
         */
 		maxSteps = FOREGROUND_QUEUE_STEPS;
-		int maxTIQ;
 		maxTIQ = getMaxTIQ(ps->backQueue);
 		if(maxTIQ + maxSteps >= STEPS_TO_PROMOTION){
 			maxSteps = STEPS_TO_PROMOTION - maxTIQ;
@@ -256,6 +264,7 @@ char* runNextProcessInSchedule( schedule *ps ) {
 		
         next = getNext(ps->foreQueue);
         loadProcessData(next->data);
+        
         bool isFinished = runProcess(next->processName,ppSystemCall,pNumSteps);
 		updateProcessTimes(ps,*pNumSteps);
 		ps->currentTime += *pNumSteps;

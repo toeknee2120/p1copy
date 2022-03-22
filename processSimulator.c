@@ -143,13 +143,21 @@ void promoteProcess( char *pName, processData *pData ){
             pData->heap[7] = 0;
             if( !(time-pData->heap[11]-pData->heap[10]) )
                 printf( "Process promoted: %s-%d (run for %d/%d steps so far)\n", pData->TLN, pData->heap[0], pData->heap[5], pData->heap[1] );
-            else if( time-pData->heap[11]-pData->heap[10]<0 )
+            else if( time-pData->heap[11]-pData->heap[10]<0 ){
+                red();
                 printf( "ERROR - Process promoted %d step(s) too soon: %s-%d (run for %d/%d steps so far)\n", -1*(time-pData->heap[11]-pData->heap[10]), pData->TLN, pData->heap[0], pData->heap[5], pData->heap[1] );
-            else
+                reset();
+            }
+            else{
+                red();
                 printf( "ERROR - Process promoted %d step(s) too late: %s-%d (run for %d/%d steps so far)\n", time-pData->heap[11]-pData->heap[10], pData->TLN, pData->heap[0], pData->heap[5], pData->heap[1] );
+                reset();
+            }
         }
         else{
+            red();
             printf( "ERROR - Attempting to promote foreground process: %s-%d (run for %d/%d steps so far)\n", pData->TLN, pData->heap[0], pData->heap[5], pData->heap[1] );
+            reset();
         }
 
     }
