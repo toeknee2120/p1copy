@@ -34,8 +34,11 @@ void reset(){printf("\033[0m");}
  * Prints the queues inside the schedule
  */
 void printSchedule(schedule *ps){ 
+    yellow();
     printQueue(ps->foreQueue, "FOREGROUND");
     printQueue(ps->backQueue, "BACKGROUND");
+    printf("--------------------------------------------------\n\n");
+    reset();
 }
 
 /* printQueue
@@ -46,9 +49,8 @@ void printSchedule(schedule *ps){
  */
 void printQueue(Queue* q, char* queuePriority){
     LLNode* currentNode;
-    
-    yellow();
-    if ( (!isEmpty(q))){
+        
+    // if ( (!isEmpty(q))){
         currentNode = q->qFront;
         printf("--- %s---\n", queuePriority);
         while(currentNode != NULL){
@@ -60,8 +62,7 @@ void printQueue(Queue* q, char* queuePriority){
             
             currentNode = currentNode->pNext;
         }     
-    }
-    reset();
+    // }
 }
 
 /* updateProcessTimes
@@ -248,7 +249,9 @@ char* runNextProcessInSchedule( schedule *ps ) {
 	queueType removeProcess;
 	process* next;
     int maxTIQ;
-	
+
+    printSchedule(ps);
+    
     if(!(isEmpty(ps->foreQueue))){
         //doing foreground stuff
         /*
@@ -292,7 +295,6 @@ char* runNextProcessInSchedule( schedule *ps ) {
             enqueue(ps->foreQueue,removeProcess);
         }
 
-        printSchedule(ps);
     }
 
     
@@ -330,9 +332,9 @@ char* runNextProcessInSchedule( schedule *ps ) {
             free(removeProcess);
         }
         
-        printSchedule(ps);
     }//end of if(!(isEmpty(ps->backQueue)) && (isEmpty(ps->foreQueue)))
-		
+
+    
     return ret; /* TODO: be sure to store the value returned by runProcess in ret */
 }
 
