@@ -16,16 +16,15 @@ void reset();
 void printQueue(Queue* q, char* queuePriority);
 void printSchedule(schedule *ps);    
 
+void black(){printf("\033[30m");}
 void blue(){printf("\033[34m");}
 void cyan(){ printf("\033[0;36m");}
-void red(){printf("\033[1;31m");}
-void yellow(){printf("\033[33m");}
-void reset(){printf("\033[0m");}
-
-void black(){printf("\033[30m");}
 void green(){printf("\033[32m");}
 void magenta(){printf("\033[35m");}
+void red(){printf("\033[1;31m");}
 void white(){printf("\033[37m");}
+void yellow(){printf("\033[33m");}
+void reset(){printf("\033[0m");}
 
 
 /* printSchedule

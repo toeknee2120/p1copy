@@ -105,11 +105,16 @@ bool runProcess( char *pName, char **ppSystemCall, int *pNumSteps ){
         exit(-1);
     }
     else if( RAM->heap[5]==RAM->heap[1] ){
+        green();
         printf( "Process completed after %d steps: %s-%d\n", i, RAM->TLN, RAM->heap[0] );
+        reset();
         return true;
     }
-    else if( *ppSystemCall != NULL )
+    else if( *ppSystemCall != NULL ){
+        magenta();
         printf( "Execution interrupted after %d steps: %s-%d\n", i, RAM->TLN, RAM->heap[0] );
+        reset();
+    }
     
     return false;
 }
