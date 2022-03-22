@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include "multilevelQueueScheduler.h"
 
 static const int STEPS_TO_PROMOTION = 50;
@@ -45,7 +46,7 @@ void printQueue(Queue* q, char* queuePriority){
         printf("--- %s---\n", queuePriority);
         while(currentNode != NULL){
             // Added check to only print the TIQ for background processes            
-            if (queuePriority == "BACKGROUND" )
+            if ( strcmp(queuePriority,"BACKGROUND") == 0)
                 printf("%-20s  \t TIQ: %d\n", currentNode->qt->processName, currentNode->qt->timeInQueue);
             else
                 printf("%-20s\n", currentNode->qt->processName);
@@ -75,23 +76,27 @@ void updateProcessTimes(schedule *ps, int stepsCompleted){
 	}
 }
 
-int checkTIQ(schedule* ps){
+/* getMaxTIQ
+ * input: queue
+ * output: the max TIQ as an integer
+ *
+ * Looks through all the BACKGROUND processes to find the max timeInQueue
+ */
+int getMaxTIQ(Queue* q){
 	int maxTIQ = 0;
 	LLNode* currentNode;
 
-	if(!isEmpty(ps->backQueue)){
-		currentNode = ps->backQueue->qFront;
-		if(currentNode->qt->timeInQueue > maxTIQ){
-			maxTIQ = currentNode->qt->timeInQueue;
-		}
+	if(!isEmpty(q)){
+		currentNode = q->qFront;
 
-		while(currentNode->pNext != NULL){
-			currentNode = currentNode->pNext;
-			if(currentNode->qt->timeInQueue >= maxTIQ){
+		while(currentNode != NULL){
+			if(currentNode->qt->timeInQueue >= maxTIQ)
 				maxTIQ = currentNode->qt->timeInQueue;
-			}
+            
+			currentNode = currentNode->pNext;
 		}
 	}
+    
 	return maxTIQ;
 }
 
@@ -244,7 +249,7 @@ char* runNextProcessInSchedule( schedule *ps ) {
         */
 		maxSteps = FOREGROUND_QUEUE_STEPS;
 		int maxTIQ;
-		maxTIQ = checkTIQ(ps);
+		maxTIQ = getMaxTIQ(ps->backQueue);
 		if(maxTIQ + maxSteps >= STEPS_TO_PROMOTION){
 			maxSteps = STEPS_TO_PROMOTION - maxTIQ;
 		}
