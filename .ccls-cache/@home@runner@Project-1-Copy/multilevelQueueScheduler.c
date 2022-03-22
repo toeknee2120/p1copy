@@ -10,20 +10,33 @@ int min( int x, int y );
 void red();
 void yellow();
 void reset();
-void PrintQueue(Queue* q, char* queuePriority);
-    
+void printQueue(Queue* q, char* queuePriority);
+void printSchedule(schedule *ps);    
 
 void cyan(){ printf("\033[0;36m");}
 void red(){printf("\033[1;31m");}
 void yellow(){printf("\033[1;33m");}
 void reset(){printf("\033[0m");}
 
+/* printSchedule
+ * input: schedule
+ * output: void
+ *
+ * Prints the queues inside the schedule
+ */
 void printSchedule(schedule *ps){ 
-    PrintQueue(ps->foreQueue, "FOREGROUND");
-    PrintQueue(ps->backQueue, "BACKGROUND");
+    
+    printQueue(ps->foreQueue, "FOREGROUND");
+    printQueue(ps->backQueue, "BACKGROUND");
 }
 
-void PrintQueue(Queue* q, char* queuePriority){
+/* printQueue
+ * input: queue, string
+ * output: void
+ *
+ * Prints the processes in the provided queue
+ */
+void printQueue(Queue* q, char* queuePriority){
     LLNode* currentNode;
     
     yellow();
@@ -31,11 +44,35 @@ void PrintQueue(Queue* q, char* queuePriority){
         currentNode = q->qFront;
         printf("--- %s---\n", queuePriority);
         while(currentNode != NULL){
-            printf("%s  \t TIQ: %d\n", currentNode->qt->processName, currentNode->qt->timeInQueue);            
+            // Added check to only print the TIQ for background processes            
+            if (queuePriority == "BACKGROUND" )
+                printf("%-20s  \t TIQ: %d\n", currentNode->qt->processName, currentNode->qt->timeInQueue);
+            else
+                printf("%-20s\n", currentNode->qt->processName);
+            
             currentNode = currentNode->pNext;
         }     
     }
     reset();
+}
+
+/* updateProcessTimes
+ * input: schedule, stepsCompleted
+ * output: void
+ *
+ * Adds the number of steps completed to each BACKGROUND processes' timeInQueue
+ */
+void updateProcessTimes(schedule *ps, int stepsCompleted){
+	LLNode* currentNode;
+    
+	if(!isEmpty(ps->backQueue)){
+		currentNode = ps->backQueue->qFront;
+
+		while(currentNode != NULL){
+			currentNode->qt->timeInQueue += stepsCompleted;
+			currentNode = currentNode->pNext;
+		}
+	}
 }
 
 int checkTIQ(schedule* ps){
@@ -97,6 +134,8 @@ void findProcessToPromote(schedule* ps){
 	}
 	
 }
+
+
 
 //=============================================================================================
 
@@ -174,30 +213,6 @@ void addNewProcessToSchedule( schedule *ps, char *processName, priority p ) {
 
 
 
-
-void updateProcessTimes(schedule *ps, int stepsCompleted){
-	LLNode* currentNode;
-	if(!isEmpty(ps->foreQueue)){
-		currentNode = ps->foreQueue->qFront;
-		currentNode->qt->timeInQueue += stepsCompleted;
-
-		while(currentNode->pNext != NULL){
-			currentNode = currentNode->pNext;
-			currentNode->qt->timeInQueue += stepsCompleted;
-		}
-	}
-
-	if(!isEmpty(ps->backQueue)){
-		currentNode = ps->backQueue->qFront;
-		currentNode->qt->timeInQueue += stepsCompleted;
-
-		while(currentNode->pNext != NULL){
-			currentNode = currentNode->pNext;
-			currentNode->qt->timeInQueue += stepsCompleted;
-		}
-	}
-	
-}
 
 /* runNextProcessInSchedule
  * input: a schedule
