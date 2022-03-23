@@ -206,7 +206,8 @@ void addNewProcessToSchedule( schedule *ps, char *processName, priority p ) {
 	processData* newProcessData = initializeProcessData(processName);
 	process* newProcess = (process*)malloc(sizeof(process));
 
-	newProcess->processName = processName;
+    newProcess->processName = malloc(sizeof(processName));
+    strcpy( newProcess->processName, processName );
 	newProcess->priority = p;
 	newProcess->timeInQueue = 0;
 	newProcess->data = newProcessData;
@@ -221,7 +222,9 @@ void addNewProcessToSchedule( schedule *ps, char *processName, priority p ) {
 		enqueue(ps->backQueue, newProcess);
 	}
 	
-    //free( processName ); /* TODO: This is to prevent a memory leak but you should remove it once you create a process to put processName into */
+    free( processName );
+    
+     /* TODO: This is to prevent a memory leak but you should remove it once you create a process to put processName into */
 }
 
 
@@ -277,7 +280,8 @@ char* runNextProcessInSchedule( schedule *ps ) {
         }
         if(isFinished){
             removeProcess = dequeue(ps->backQueue);
-            freeProcessData( );
+            freeProcessData();
+            free(removeProcess->processName);
             free(removeProcess);
         }
         
@@ -323,6 +327,7 @@ char* runNextProcessInSchedule( schedule *ps ) {
         if(isFinished){
             removeProcess = dequeue(ps->foreQueue);
             freeProcessData( );
+            free(removeProcess->processName);
             free(removeProcess);
         }
         else if(!isFinished){
