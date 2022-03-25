@@ -205,9 +205,10 @@ void addNewProcessToSchedule( schedule *ps, char *processName, priority p ) {
     The function "initializeProcessData" in processSimulator.c will be useful in completing this. */
 	processData* newProcessData = initializeProcessData(processName);
 	process* newProcess = (process*)malloc(sizeof(process));
-
-    newProcess->processName = malloc(sizeof(processName));
+ 
+    newProcess->processName = (char *) malloc(sizeof(char) * 21);
     strcpy( newProcess->processName, processName );
+
 	newProcess->priority = p;
 	newProcess->timeInQueue = 0;
 	newProcess->data = newProcessData;
